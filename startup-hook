@@ -36,9 +36,9 @@ fi
 # APPLICATION LAUNCHER
 #
 
-# Use synapse as our app launcher. (-s: don't display until requested) 
-if [ -z "$(pgrep albert)" ] ; then
-    albert &
+# Use rofi as the app launcher
+if [ -z "$(pgrep rofi)" ] ; then
+    rofi &
 fi
 
 # # Use synapse as our app launcher. (-s: don't display until requested) 

@@ -207,7 +207,8 @@ myKeyBindings =
     ((myModMask, xK_b), sendMessage ToggleStruts)
     , ((myModMask, xK_a), sendMessage MirrorShrink)
     , ((myModMask, xK_z), sendMessage MirrorExpand)
-    , ((myModMask, xK_p), spawn "albert")
+    , ((myModMask, xK_p), spawn "rofi -show run")
+    -- , ((myModMask, xK_p), spawn "albert")
     --, ((myModMask .|. mod1Mask, xK_space), spawn "synapse")
     , ((myModMask, xK_u), focusUrgent)
 
@@ -268,9 +269,9 @@ myKeyBindings =
 
 myManagementHooks :: [ManageHook]
 myManagementHooks = [
-  resource =? "albert" --> doIgnore
+  -- resource =? "albert" --> doIgnore
   --, resource =? "synapse" --> doIgnore
-  , resource =? "stalonetray" --> doIgnore
+  resource =? "stalonetray" --> doIgnore
   -- , className =? "rdesktop" --> doFloat
   -- , (className =? "Komodo IDE") --> doF (W.shift "5:Dev")
   -- , (className =? "Komodo IDE" <&&> resource =? "Komodo_find2") --> doFloat
