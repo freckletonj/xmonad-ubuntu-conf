@@ -41,10 +41,10 @@ import Data.Ratio ((%))
 -}
 
 myModMask            = mod4Mask       -- changes the mod key to "super"
-myFocusedBorderColor = "#ff0000"      -- color of focused border
+myFocusedBorderColor = "#ff6644"      -- color of focused border
 myNormalBorderColor  = "#cccccc"      -- color of inactive border
-myBorderWidth        = 1              -- width of border around windows
-myTerminal           = "terminator"   -- which terminal software to use
+myBorderWidth        = 4              -- width of border around windows
+myTerminal           = "gnome-terminal"     -- which terminal software to use
 myIMRosterTitle      = "Buddy List"   -- title of roster on IM workspace
                                       -- use "Buddy List" for Pidgin, but
                                       -- "Contact List" for Empathy
@@ -158,7 +158,8 @@ defaultLayouts = smartBorders(avoidStruts(
 -- identified using the myIMRosterTitle variable, and by default is
 -- configured for Pidgin, so if you're using something else you
 -- will want to modify that variable.
-chatLayout = avoidStruts(withIM (1%7) (Title myIMRosterTitle) Grid)
+
+--chatLayout = avoidStruts(withIM (1%7) (Title myIMRosterTitle) Grid)
 
 -- The GIMP layout uses the ThreeColMid layout. The traditional GIMP
 -- floating panels approach is a bit of a challenge to handle with xmonad;
@@ -166,14 +167,15 @@ chatLayout = avoidStruts(withIM (1%7) (Title myIMRosterTitle) Grid)
 -- master area, and then use this ThreeColMid layout to make the panels
 -- tile to the left and right of the image. If you use GIMP 2.8, you
 -- can use single-window mode and avoid this issue.
-gimpLayout = smartBorders(avoidStruts(ThreeColMid 1 (3/100) (3/4)))
+
+-- gimpLayout = smartBorders(avoidStruts(ThreeColMid 1 (3/100) (3/4)))
 
 -- Here we combine our default layouts with our specific, workspace-locked
 -- layouts.
-myLayouts =
-  onWorkspace "7:Chat" chatLayout
-  $ onWorkspace "9:Pix" gimpLayout
-  $ defaultLayouts
+myLayouts = avoidStruts $ layoutHook defaultConfig
+  -- onWorkspace "7:Chat" chatLayout
+  -- $ onWorkspace "9:Pix" gimpLayout
+  -- $ defaultLayouts
 
 
 {-
@@ -205,12 +207,19 @@ myKeyBindings =
     ((myModMask, xK_b), sendMessage ToggleStruts)
     , ((myModMask, xK_a), sendMessage MirrorShrink)
     , ((myModMask, xK_z), sendMessage MirrorExpand)
-    , ((myModMask, xK_p), spawn "synapse")
-    , ((myModMask .|. mod1Mask, xK_space), spawn "synapse")
+    , ((myModMask, xK_p), spawn "albert")
+    --, ((myModMask .|. mod1Mask, xK_space), spawn "synapse")
     , ((myModMask, xK_u), focusUrgent)
-    , ((0, 0x1008FF12), spawn "amixer -q set Master toggle")
-    , ((0, 0x1008FF11), spawn "amixer -q set Master 10%-")
-    , ((0, 0x1008FF13), spawn "amixer -q set Master 10%+")
+
+    -- relevant to desktop
+    , ((myModMask, xK_F12), spawn "amixer -q -D pulse set Master toggle")
+    , ((myModMask, xK_F10), spawn "amixer -q -D pulse set Master 10%-")
+    , ((myModMask, xK_F11), spawn "amixer -q -D pulse set Master 10%+")    
+
+    -- relevant to laptops
+    , ((0, 0x1008FF12), spawn "amixer -q -D pulse set Master toggle")
+    , ((0, 0x1008FF11), spawn "amixer -q -D pulse set Master 10%-")
+    , ((0, 0x1008FF13), spawn "amixer -q -D pulse set Master 10%+")
   ]
 
 
@@ -259,16 +268,17 @@ myKeyBindings =
 
 myManagementHooks :: [ManageHook]
 myManagementHooks = [
-  resource =? "synapse" --> doIgnore
+  resource =? "albert" --> doIgnore
+  --, resource =? "synapse" --> doIgnore
   , resource =? "stalonetray" --> doIgnore
-  , className =? "rdesktop" --> doFloat
-  , (className =? "Komodo IDE") --> doF (W.shift "5:Dev")
-  , (className =? "Komodo IDE" <&&> resource =? "Komodo_find2") --> doFloat
-  , (className =? "Komodo IDE" <&&> resource =? "Komodo_gotofile") --> doFloat
-  , (className =? "Komodo IDE" <&&> resource =? "Toplevel") --> doFloat
-  , (className =? "Empathy") --> doF (W.shift "7:Chat")
-  , (className =? "Pidgin") --> doF (W.shift "7:Chat")
-  , (className =? "Gimp-2.8") --> doF (W.shift "9:Pix")
+  -- , className =? "rdesktop" --> doFloat
+  -- , (className =? "Komodo IDE") --> doF (W.shift "5:Dev")
+  -- , (className =? "Komodo IDE" <&&> resource =? "Komodo_find2") --> doFloat
+  -- , (className =? "Komodo IDE" <&&> resource =? "Komodo_gotofile") --> doFloat
+  -- , (className =? "Komodo IDE" <&&> resource =? "Toplevel") --> doFloat
+  -- , (className =? "Empathy") --> doF (W.shift "7:Chat")
+  -- , (className =? "Pidgin") --> doF (W.shift "7:Chat")
+  -- , (className =? "Gimp-2.8") --> doF (W.shift "9:Pix")
   ]
 
 
@@ -338,6 +348,7 @@ main = do
   xmproc <- spawnPipe "xmobar ~/.xmonad/xmobarrc"
   xmonad $ withUrgencyHook NoUrgencyHook $ defaultConfig {
     focusedBorderColor = myFocusedBorderColor
+  , focusFollowsMouse = False
   , normalBorderColor = myNormalBorderColor
   , terminal = myTerminal
   , borderWidth = myBorderWidth
