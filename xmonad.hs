@@ -36,9 +36,32 @@ import qualified Data.Map as M
 import Data.Ratio ((%))
 
 {-
+  Key Aliases
+
+  find a key using command line: `xev`
+
+  also useful: `xmodmap`
+
+    shift       Shift_L (0x32),  Shift_R (0x3e)
+    lock      
+    control     Control_L (0x25),  Control_L (0x42),  Control_R (0x69)
+    mod1        Alt_L (0x40),  Alt_R (0x6c),  Meta_L (0xcd)
+    mod2        Num_Lock (0x4d)
+    mod3      
+    mod4        Super_L (0x85),  Super_R (0x86),  Super_L (0xce),  Hyper_L (0xcf)
+    mod5        ISO_Level3_Shift (0x5c),  Mode_switch (0xcb)
+
+-}
+
+altMask = mod1Mask -- I'm not using these aliases yet, but, that's what they mean
+windMask    = mod4Mask
+
+
+{-
   Xmonad configuration variables. These settings control some of the
   simpler parts of xmonad's behavior and are straightforward to tweak.
 -}
+
 
 myModMask            = mod4Mask       -- changes the mod key to "super"
 myFocusedBorderColor = "#ff6644"      -- color of focused border
@@ -89,13 +112,13 @@ myUrgentWSRight = "}"
 
 myWorkspaces =
   [
-    "7:Chat",  "8:Dbg", "9:Pix",
-    "4:Docs",  "5:Dev", "6:Web",
-    "1:Term",  "2:Hub", "3:Mail",
-    "0:VM",    "Extr1", "Extr2"
+    "7", "8", "9",
+    "4", "5", "6",
+    "1", "2", "3",
+    "0", ".", "ent"
   ]
 
-startupWorkspace = "5:Dev"  -- which workspace do you want to be on after launch?
+startupWorkspace = "7"  -- which workspace do you want to be on after launch?
 
 {-
   Layout configuration. In this section we identify which xmonad
@@ -141,7 +164,7 @@ defaultLayouts = smartBorders(avoidStruts(
 
   -- Circle layout places the master window in the center of the screen.
   -- Remaining windows appear in a circle around it
-  -- ||| Circle
+  ||| Circle
 
   -- Grid layout tries to equally distribute windows in the available
   -- space, increasing the number of columns and rows as necessary.
@@ -204,7 +227,7 @@ myLayouts = avoidStruts $ layoutHook defaultConfig
 
 myKeyBindings =
   [
-    ((myModMask, xK_b), sendMessage ToggleStruts)
+    ((myModMask, xK_b), sendMessage ToggleStruts) -- xmobar
     , ((myModMask, xK_a), sendMessage MirrorShrink)
     , ((myModMask, xK_z), sendMessage MirrorExpand)
     , ((myModMask, xK_p), spawn "rofi -show run")
@@ -212,15 +235,15 @@ myKeyBindings =
     --, ((myModMask .|. mod1Mask, xK_space), spawn "synapse")
     , ((myModMask, xK_u), focusUrgent)
 
-    -- relevant to desktop
-    , ((myModMask, xK_F12), spawn "amixer -q -D pulse set Master toggle")
-    , ((myModMask, xK_F10), spawn "amixer -q -D pulse set Master 10%-")
-    , ((myModMask, xK_F11), spawn "amixer -q -D pulse set Master 10%+")    
+    -- relevant to my desktop
+    , ((myModMask, xK_F10), spawn "amixer -q -D pulse set Master toggle")
+    , ((myModMask, xK_F11), spawn "amixer -q -D pulse set Master 10%-")
+    , ((myModMask, xK_F12), spawn "amixer -q -D pulse set Master 10%+")    
 
-    -- relevant to laptops
-    , ((0, 0x1008FF12), spawn "amixer -q -D pulse set Master toggle")
-    , ((0, 0x1008FF11), spawn "amixer -q -D pulse set Master 10%-")
-    , ((0, 0x1008FF13), spawn "amixer -q -D pulse set Master 10%+")
+    -- -- relevant to laptops
+    -- , ((0, 0x1008FF12), spawn "amixer -q -D pulse set Master toggle")
+    -- , ((0, 0x1008FF11), spawn "amixer -q -D pulse set Master 10%-")
+    -- , ((0, 0x1008FF13), spawn "amixer -q -D pulse set Master 10%+")
   ]
 
 
@@ -320,22 +343,22 @@ numKeys =
 -- how to send windows to different workspaces,
 -- and what keys to use to change which monitor is focused.
 myKeys = myKeyBindings ++
-  [
+  [ -- for when NumLock is set to the key's symbols
     ((m .|. myModMask, k), windows $ f i)
        | (i, k) <- zip myWorkspaces numPadKeys
        , (f, m) <- [(W.greedyView, 0), (W.shift, shiftMask)]
   ] ++
-  [
+  [ -- for when NumLock is set to the key's numbers
     ((m .|. myModMask, k), windows $ f i)
        | (i, k) <- zip myWorkspaces numKeys
        , (f, m) <- [(W.greedyView, 0), (W.shift, shiftMask)]
   ] ++
-  M.toList (planeKeys myModMask (Lines 4) Finite) ++
-  [
-    ((m .|. myModMask, key), screenWorkspace sc
+  M.toList (planeKeys myModMask (Lines 4) Finite) ++ -- ???
+  [ -- for changing monitors
+    ((m .|. myModMask .|. mod1Mask, key), screenWorkspace sc -- mod1Mask = altMask
       >>= flip whenJust (windows . f))
-      | (key, sc) <- zip [xK_w, xK_e, xK_r] [1,0,2]
-      , (f, m) <- [(W.view, 0), (W.shift, shiftMask)]
+      | (key, sc) <- zip [xK_j, xK_k, xK_l] [1,0,2] -- change monitors
+      , (f, m) <- [(W.view, 0), (W.shift, shiftMask)] -- move to monitor
   ]
 
 
