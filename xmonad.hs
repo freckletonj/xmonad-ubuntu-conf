@@ -15,6 +15,7 @@
 -}
 
 import XMonad
+import XMonad.Actions.CycleWS
 import XMonad.Hooks.SetWMName
 import XMonad.Layout.Grid
 import XMonad.Layout.ResizableTile
@@ -66,7 +67,7 @@ windMask    = mod4Mask
 myModMask            = mod4Mask       -- changes the mod key to "super"
 myFocusedBorderColor = "#ff6644"      -- color of focused border
 myNormalBorderColor  = "#cccccc"      -- color of inactive border
-myBorderWidth        = 4              -- width of border around windows
+myBorderWidth        = 6              -- width of border around windows
 myTerminal           = "gnome-terminal"     -- which terminal software to use
 myIMRosterTitle      = "Buddy List"   -- title of roster on IM workspace
                                       -- use "Buddy List" for Pidgin, but
@@ -359,7 +360,8 @@ myKeys = myKeyBindings ++
       >>= flip whenJust (windows . f))
       | (key, sc) <- zip [xK_j, xK_k, xK_l] [1,0,2] -- change monitors
       , (f, m) <- [(W.view, 0), (W.shift, shiftMask)] -- move to monitor
-  ]
+  ] ++
+  [((myModMask, xK_s), swapNextScreen)] -- adapted from: https://github.com/IvanMalison/dotfiles/blob/d49eb65e7eb06cff90e171c0f5c44d4dae3a5510/dotfiles/xmonad/xmonad.hs#L671
 
 
 {-
