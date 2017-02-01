@@ -37,11 +37,14 @@ xcompmgr -n &
 # connected screens and find out what names you should use to refer to them.
 
 
-# Activate primary screen 
-xrandr --output HDMI1 --auto --primary
-
-# order screens appropriately
+# Activate primary screen, order screens appropriately
+xrandr --output --auto HDMI1 --primary
 xrandr --output VGA1 --left-of HDMI1
+
+# xrandr --output VGA1 --auto --primary
+# xrandr --output HDMI1 --right-of VGA1
+
+
 
 # Activate primary screen 
 # xrandr --output LVDS-1 --auto --primary

@@ -119,7 +119,7 @@ myWorkspaces =
     "0", ".", "ent"
   ]
 
-startupWorkspace = "7"  -- which workspace do you want to be on after launch?
+startupWorkspace = "8"  -- which workspace do you want to be on after launch?
 
 {-
   Layout configuration. In this section we identify which xmonad
@@ -338,6 +338,13 @@ numKeys =
     , xK_0, xK_minus, xK_equal
   ]
 
+altNumKeys =
+  [
+    xK_w, xK_e, xK_r
+    , xK_s, xK_d, xK_f
+    , xK_x, xK_c, xK_v
+  ]  
+
 -- Here, some magic occurs that I once grokked but has since
 -- fallen out of my head. Essentially what is happening is
 -- that we are telling xmonad how to navigate workspaces,
@@ -354,6 +361,11 @@ myKeys = myKeyBindings ++
        | (i, k) <- zip myWorkspaces numKeys
        , (f, m) <- [(W.greedyView, 0), (W.shift, shiftMask)]
   ] ++
+  [ -- for when NumLock is set to the key's numbers
+    ((m .|. myModMask, k), windows $ f i)
+       | (i, k) <- zip myWorkspaces altNumKeys
+       , (f, m) <- [(W.greedyView, 0), (W.shift, shiftMask)]
+  ] ++
   M.toList (planeKeys myModMask (Lines 4) Finite) ++ -- ???
   [ -- for changing monitors
     ((m .|. myModMask .|. mod1Mask, key), screenWorkspace sc -- mod1Mask = altMask
@@ -362,6 +374,10 @@ myKeys = myKeyBindings ++
       , (f, m) <- [(W.view, 0), (W.shift, shiftMask)] -- move to monitor
   ] ++
   [((myModMask, xK_s), swapNextScreen)] -- adapted from: https://github.com/IvanMalison/dotfiles/blob/d49eb65e7eb06cff90e171c0f5c44d4dae3a5510/dotfiles/xmonad/xmonad.hs#L671
+
+  -- Screenshots: mod-Print=all screens, mod-C-Print=just window
+  ++ [ ((myModMask, xK_Print), spawn "scrot screen_%Y-%m-%d-%H-%M-%S.png -d 1")
+     , ((myModMask .|. controlMask, xK_Print), spawn "scrot window_%Y-%m-%d-%H-%M-%S.png -u")]
 
 
 {-
