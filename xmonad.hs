@@ -25,6 +25,9 @@ import XMonad.Layout.NoBorders
 import XMonad.Layout.Circle
 import XMonad.Layout.PerWorkspace (onWorkspace)
 import XMonad.Layout.Fullscreen
+
+import XMonad.Layout.GridVariants
+
 import XMonad.Util.EZConfig
 import XMonad.Util.Run
 import XMonad.Hooks.DynamicLog
@@ -32,6 +35,8 @@ import XMonad.Actions.Plane
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.UrgencyHook
 import XMonad.Hooks.ICCCMFocus
+import XMonad.Hooks.EwmhDesktops -- in an attempt to get xdotool working
+
 import qualified XMonad.StackSet as W
 import qualified Data.Map as M
 import Data.Ratio ((%))
@@ -119,7 +124,7 @@ myWorkspaces =
     "0", ".", "ent"
   ]
 
-startupWorkspace = "8"  -- which workspace do you want to be on after launch?
+-- startupWorkspace = "8"  -- which workspace do you want to be on after launch?
 
 {-
   Layout configuration. In this section we identify which xmonad
@@ -145,17 +150,24 @@ defaultLayouts = smartBorders(avoidStruts(
   -- and remaining windows tile on the right. By default each area
   -- takes up half the screen, but you can resize using "super-h" and
   -- "super-l".
-  ResizableTall 1 (3/100) (1/2) []
+  ResizableTall 1 (5/100) (2/3) []
 
+  -- http://xmonad.org/xmonad-docs/xmonad-contrib/XMonad-Layout-GridVariants.html
+  ||| SplitGrid XMonad.Layout.GridVariants.L 1 2 (9/10) (16/10) (5/100)
+  ||| SplitGrid XMonad.Layout.GridVariants.L 1 3 (9/10) (16/10) (5/100)
+  
+  
   -- Mirrored variation of ResizableTall. In this layout, the large
   -- master window is at the top, and remaining windows tile at the
   -- bottom of the screen. Can be resized as described above.
-  ||| Mirror (ResizableTall 1 (3/100) (1/2) [])
+  -- ||| Mirror (ResizableTall 1 (3/100) (1/2) [])
 
   -- Full layout makes every window full screen. When you toggle the
   -- active window, it will bring the active window to the front.
   ||| noBorders Full
 
+
+  
   -- ThreeColMid layout puts the large master window in the center
   -- of the screen. As configured below, by default it takes of 3/4 of
   -- the available space. Remaining windows tile to both the left and
@@ -170,7 +182,8 @@ defaultLayouts = smartBorders(avoidStruts(
   -- Grid layout tries to equally distribute windows in the available
   -- space, increasing the number of columns and rows as necessary.
   -- Master window is at top left.
-  ||| Grid))
+  -- ||| XMonad.Layout.Grid.Grid
+  ))
 
 
 -- Here we define some layouts which will be assigned to specific
@@ -196,7 +209,7 @@ defaultLayouts = smartBorders(avoidStruts(
 
 -- Here we combine our default layouts with our specific, workspace-locked
 -- layouts.
-myLayouts = avoidStruts $ layoutHook defaultConfig
+myLayouts = avoidStruts $ defaultLayouts -- layoutHook defaultConfig -- defaultLayouts
   -- onWorkspace "7:Chat" chatLayout
   -- $ onWorkspace "9:Pix" gimpLayout
   -- $ defaultLayouts
@@ -229,8 +242,8 @@ myLayouts = avoidStruts $ layoutHook defaultConfig
 myKeyBindings =
   [
     ((myModMask, xK_b), sendMessage ToggleStruts) -- xmobar
-    , ((myModMask, xK_a), sendMessage MirrorShrink)
-    , ((myModMask, xK_z), sendMessage MirrorExpand)
+    -- , ((myModMask, xK_a), sendMessage MirrorShrink)
+    -- , ((myModMask, xK_z), sendMessage MirrorExpand)
     , ((myModMask, xK_p), spawn "rofi -show run")
     -- , ((myModMask, xK_p), spawn "albert")
     --, ((myModMask .|. mod1Mask, xK_space), spawn "synapse")
@@ -372,12 +385,17 @@ myKeys = myKeyBindings ++
       >>= flip whenJust (windows . f))
       | (key, sc) <- zip [xK_j, xK_k, xK_l] [1,0,2] -- change monitors
       , (f, m) <- [(W.view, 0), (W.shift, shiftMask)] -- move to monitor
-  ] ++
-  [((myModMask, xK_s), swapNextScreen)] -- adapted from: https://github.com/IvanMalison/dotfiles/blob/d49eb65e7eb06cff90e171c0f5c44d4dae3a5510/dotfiles/xmonad/xmonad.hs#L671
+  ]
+
+  ++ [((myModMask, xK_a), swapNextScreen)] -- adapted from: https://github.com/IvanMalison/dotfiles/blob/d49eb65e7eb06cff90e171c0f5c44d4dae3a5510/dotfiles/xmonad/xmonad.hs#L671
 
   -- Screenshots: mod-Print=all screens, mod-C-Print=just window
-  ++ [ ((myModMask, xK_Print), spawn "scrot screen_%Y-%m-%d-%H-%M-%S.png -d 1")
-     , ((myModMask .|. controlMask, xK_Print), spawn "scrot window_%Y-%m-%d-%H-%M-%S.png -u")]
+  ++ [ ((myModMask, xK_Print),                 
+        spawn "scrot \"/home/josh/Media/Pictures/0 screenshots/screen_%Y-%m-%d-%H-%M-%S.png -d 1\"")
+     , ((myModMask .|. controlMask, xK_Print), 
+        spawn "scrot \"/home/josh/Media/Pictures/0 screenshots/window_%Y-%m-%d-%H-%M-%S.png\" -u")]
+
+  ++ [ ((myModMask .|. shiftMask, xK_z), kill) ]
 
 
 {-
@@ -388,7 +406,8 @@ myKeys = myKeyBindings ++
 
 main = do
   xmproc <- spawnPipe "xmobar ~/.xmonad/xmobarrc"
-  xmonad $ withUrgencyHook NoUrgencyHook $ defaultConfig {
+  -- xmonad $ withUrgencyHook NoUrgencyHook $ defaultConfig {
+  xmonad $ ewmh $ defaultConfig {
     focusedBorderColor = myFocusedBorderColor
   , focusFollowsMouse = False
   , normalBorderColor = myNormalBorderColor
@@ -397,10 +416,13 @@ main = do
   , layoutHook = myLayouts
   , workspaces = myWorkspaces
   , modMask = myModMask
-  , handleEventHook = fullscreenEventHook
+
+    -- NOTE: I added in Ewmh to try to get xdotool working, in attempt to automate rebuilding of my hakyll blog
+    --       My blog part isn't really working quite yet
+  , handleEventHook = XMonad.Layout.Fullscreen.fullscreenEventHook <+> XMonad.Hooks.EwmhDesktops.fullscreenEventHook
   , startupHook = do
       setWMName "LG3D"
-      windows $ W.greedyView startupWorkspace
+      -- windows $ W.greedyView startupWorkspace -- I don't like how this makes xmonad change my windows on refresh
       spawn "~/.xmonad/startup-hook"
   , manageHook = manageHook defaultConfig
       <+> composeAll myManagementHooks
