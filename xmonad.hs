@@ -144,7 +144,7 @@ defaultLayouts = smartBorders(avoidStruts(
   -- and remaining windows tile on the right. By default each area
   -- takes up half the screen, but you can resize using "super-y" and
   -- "super-o".
-  ResizableTall 1 (5/100) (2/3) []
+  (renamed [Replace "1-Split"] $ ResizableTall 1 (5/100) (2/3) [])
 
   -- Split Grids
   -- http://xmonad.org/xmonad-docs/xmonad-contrib/XMonad-Layout-GridVariants.html
@@ -202,8 +202,11 @@ myKeyBindings =
   [ -- XMobar
     ((myModMask, xK_b), sendMessage ToggleStruts)
 
-    -- App Launcher
-  , ((myModMask, xK_p), spawn "rofi -show run")
+  -- App Launcher
+  , ((myModMask, xK_p), spawn "rofi -run-command \"/bin/bash -c -i '{cmd}'\" -show run") -- uses g_spawn_async 
+  -- , ((myModMask, xK_p), spawn "rofi -show run")
+  -- rofi -run-list-command "/home/josh/.xmonad/rofi-aliases.sh" -run-command "/bin/bash -i -c '{cmd}'" -rnow -show run
+
   , ((myModMask, xK_u), focusUrgent)
 
   -- Audio: relevant to my desktop
